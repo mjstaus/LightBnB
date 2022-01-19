@@ -10,6 +10,6 @@ const pool = new Pool({
   port: process.env.DB_PORT,
 });
 
-console.log(`Connecting to db: ${process.env.DB_NAME}💁‍♀️🏘`);
+console.log(`Connecting to db: ${process.env.DB_NAME} 🏠`);
 
 module.exports = pool;
