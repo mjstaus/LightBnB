@@ -1,7 +1,8 @@
-require('dotenv').config();
-const pool = require('./db_connection');
-const properties = require('./json/properties.json');
-const users = require('./json/users.json');
+require("dotenv").config();
+const { options } = require("request");
+const pool = require("./db_connection");
+const properties = require("./json/properties.json");
+const users = require("./json/users.json");
 
 /// Users
 
@@ -122,7 +123,6 @@ exports.getAllReservations = getAllReservations;
  */
 
 const getAllProperties = (options, limit = 10) => {
- 
   const queryParams = [];
 
   const joinConditions = () => {
@@ -163,6 +163,8 @@ const getAllProperties = (options, limit = 10) => {
 
   queryParams.push(limit);
 
+  console.log(queryParams);
+
   queryString += `
     GROUP BY properties.id
     ORDER BY cost_per_night
@@ -180,40 +182,61 @@ exports.getAllProperties = getAllProperties;
  */
 
 const addProperty = function (property) {
- 
-//   const query = {
-//     text: 
-//       `INSERT INTO properties (owner_id, title, description, thumbnail_photo_url, cover_photo_url, cost_per_night, street, city, province, post_code, country, parking_spaces, number_of_bathrooms number_of_bedrooms) 
-//       VALUES (
-//       $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
-//       RETURNING *;`,
-//     values: [
-//       owner_id,
-//       title,
-//       description,
-//       thumbnail_photo_url,
-//       cover_photo_url,
-//       cost_per_night,
-//       street,
-//       city,
-//       province,
-//       post_code,
-//       country,
-//       parking_spaces,
-//       number_of_bathrooms,
-//       number_of_bedrooms
-//     ]
-//   }
+  const queryParams = [];
+  const values = [];
+  //push each property if options.property
+  //iterate over final queryParams to create values list
+  //use .join() method to join properties from array to string (set to new variable properties)
 
-//   return pool
-//     .query(query)
-//     .then((result) => {
-//       console.log(result.rows[0])
-//       return result.rows[0];
-//     })
-//     .catch((err) => {
-//       console.log(err.message);
-//     });
+  const propertyProps = [
+    "owner_id",
+    "title",
+    "description",
+    "thumbnail_photo_url",
+    "cover_photo_url",
+    "cost_per_night",
+    "street",
+    "city",
+    "province",
+    "post_code",
+    "country",
+    "parking_spaces",
+    "number_of_bathrooms",
+    "number_of_bedrooms",
+  ];
+
+  for (let prop of propertyProps) {
+    if (property[prop]) {
+      queryParams.push(prop);
+      values.push(`$${queryParams.length}`);
+    }
+  }
+
+  const queryParamsString = queryParams.join();
+  const valuesString = values.join();
+
+  const queryValues = queryParams.map((param) => property[param]);
+  console.log(queryValues);
+
+  const queryText = `
+    INSERT INTO properties (${queryParamsString})
+    VALUES (${valuesString})
+    RETURNING *;`;
+
+  const query = {
+    text: queryText,
+    values: queryValues,
+  };
+
+  return pool
+    .query(query)
+    .then((result) => {
+      console.log(result.rows[0]);
+      return result.rows[0];
+    })
+    .catch((err) => {
+      console.log(err.message);
+    });
 };
 
 exports.addProperty = addProperty;
