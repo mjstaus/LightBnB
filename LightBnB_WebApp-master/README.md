@@ -1,5 +1,12 @@
 # LightBnB
 
+This app was built as an exercise in using SQL and relational databases. 
+
+It functions as a simplified AirBnB clone!
+
+## Entity Relationship Diagram
+!["ERD"](docs/LightBnB.drawio.png)
+
 ## Project Structure
 
 ```
