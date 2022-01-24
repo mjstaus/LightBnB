@@ -1,8 +1,5 @@
 require("dotenv").config();
-// const { options } = require("request");
 const pool = require("./db_connection");
-// const properties = require("./json/properties.json");
-// const users = require("./json/users.json");
 
 /// Users
 
