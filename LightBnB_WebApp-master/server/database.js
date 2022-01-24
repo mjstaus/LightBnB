@@ -1,8 +1,8 @@
 require("dotenv").config();
-const { options } = require("request");
+// const { options } = require("request");
 const pool = require("./db_connection");
-const properties = require("./json/properties.json");
-const users = require("./json/users.json");
+// const properties = require("./json/properties.json");
+// const users = require("./json/users.json");
 
 /// Users
 
@@ -75,7 +75,7 @@ exports.getUserWithId = getUserWithId;
  * @param {{name: string, password: string, email: string}} user
  * @return {Promise<{}>} A promise to the user.
  */
-const addUser = function(user) {
+const addUser = function (user) {
   const queryText = `
     INSERT INTO users (name, email, password) 
       VALUES ($1, $2, $3)
@@ -106,8 +106,7 @@ exports.addUser = addUser;
  * @param {string} guest_id The id of the user.
  * @return {Promise<[{}]>} A promise to the reservations.
  */
-const getAllReservations = function(guest_id, limit = 10) {
-
+const getAllReservations = function (guest_id, limit = 10) {
   const queryText = `
   SELECT reservations.id, properties.*
   FROM reservations
@@ -123,7 +122,7 @@ const getAllReservations = function(guest_id, limit = 10) {
     text: queryText,
     values: queryValues,
   };
-  
+
   return pool
     .query(query)
     .then((result) => {
@@ -146,11 +145,10 @@ exports.getAllReservations = getAllReservations;
  */
 
 const getAllProperties = (options, limit = 10) => {
-  
   const queryParams = [];
 
   let queryText = `
-    SELECT properties.*, avg(property_reviews.rating) as average_rating
+    SELECT properties.*, AVG(property_reviews.rating) AS average_rating
     FROM properties
     JOIN property_reviews ON properties.id = property_id
   `;
@@ -185,16 +183,22 @@ const getAllProperties = (options, limit = 10) => {
     queryText += `(cost_per_night/100) <= $${queryParams.length}`;
   }
 
+  queryText += `GROUP BY properties.id`;
+
+  if (options.minimum_rating) {
+    queryParams.push(`${options.minimum_rating}`);
+    queryText += ` HAVING AVG(property_reviews.rating) >= $${queryParams.length}`;
+  }
+
   queryParams.push(limit);
 
-  console.log(queryParams);
-
   queryText += `
-    GROUP BY properties.id
     ORDER BY cost_per_night
     LIMIT $${queryParams.length};
     `;
-  
+
+  console.log(queryText);
+
   const query = {
     text: queryText,
     values: queryParams,
@@ -218,7 +222,7 @@ exports.getAllProperties = getAllProperties;
  * @return {Promise<{}>} A promise to the property.
  */
 
-const addProperty = function(property) {
+const addProperty = function (property) {
   const queryParams = [];
   const values = [];
 
