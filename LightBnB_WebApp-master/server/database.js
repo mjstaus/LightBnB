@@ -1,7 +1,8 @@
 require("dotenv").config();
 const pool = require("./db_connection");
 
-/// Users
+///// USERS /////
+////////////////
 
 /**
  * Get a single user from the database given their email.
@@ -72,7 +73,7 @@ exports.getUserWithId = getUserWithId;
  * @param {{name: string, password: string, email: string}} user
  * @return {Promise<{}>} A promise to the user.
  */
-const addUser = function (user) {
+const addUser = function(user) {
   const queryText = `
     INSERT INTO users (name, email, password) 
       VALUES ($1, $2, $3)
@@ -96,14 +97,14 @@ const addUser = function (user) {
 };
 exports.addUser = addUser;
 
-/// Reservations
-
+///// RESERVATIONS //////
+////////////////////////
 /**
  * Get all reservations for a single user.
  * @param {string} guest_id The id of the user.
  * @return {Promise<[{}]>} A promise to the reservations.
  */
-const getAllReservations = function (guest_id, limit = 10) {
+const getAllReservations = function(guest_id, limit = 10) {
   const queryText = `
   SELECT reservations.id, properties.*
   FROM reservations
@@ -132,8 +133,9 @@ const getAllReservations = function (guest_id, limit = 10) {
 
 exports.getAllReservations = getAllReservations;
 
-/// Properties
 
+///// PROPERTIES //////
+//////////////////////
 /**
  * Get all properties.
  * @param {{}} options An object containing query options.
@@ -143,6 +145,17 @@ exports.getAllReservations = getAllReservations;
 
 const getAllProperties = (options, limit = 10) => {
   const queryParams = [];
+  const conditions = [];
+
+  const joinConditions = (conditions) => {
+    for (const condition of conditions) {
+      if (condition === conditions[0]) {
+        queryText += `WHERE ${condition}`;
+      } else {
+        queryText += ` AND ${condition}`;
+      }
+    }
+  };
 
   let queryText = `
     SELECT properties.*, AVG(property_reviews.rating) AS average_rating
@@ -150,35 +163,25 @@ const getAllProperties = (options, limit = 10) => {
     JOIN property_reviews ON properties.id = property_id
   `;
 
-  const joinConditions = () => {
-    if (!queryParams.length) {
-      queryText += `WHERE `;
-    } else {
-      queryText += ` AND `;
-    }
-  };
-
   if (options.city) {
-    joinConditions();
     queryParams.push(`%${options.city}%`);
-    queryText += `city LIKE $${queryParams.length}`;
+    conditions.push(`city LIKE $${queryParams.length}`);
   }
   if (options.user_id) {
-    joinConditions();
     queryParams.push(`%${options.user_id}%`);
-    queryText += `user_id = $${queryParams.length}`;
+    conditions.push(`user_id = $${queryParams.length}`);
   }
   if (options.minimum_price_per_night) {
-    joinConditions();
     queryParams.push(`${options.minimum_price_per_night}`);
-    queryText += `(cost_per_night/100) >= $${queryParams.length}`;
+    conditions.push(`(cost_per_night/100) >= $${queryParams.length}`);
   }
 
   if (options.maximum_price_per_night) {
-    joinConditions();
     queryParams.push(`${options.maximum_price_per_night}`);
-    queryText += `(cost_per_night/100) <= $${queryParams.length}`;
+    conditions.push(`(cost_per_night/100) <= $${queryParams.length}`);
   }
+
+  joinConditions(conditions);
 
   queryText += `GROUP BY properties.id`;
 
@@ -193,8 +196,6 @@ const getAllProperties = (options, limit = 10) => {
     ORDER BY cost_per_night
     LIMIT $${queryParams.length};
     `;
-
-  console.log(queryText);
 
   const query = {
     text: queryText,
@@ -219,7 +220,7 @@ exports.getAllProperties = getAllProperties;
  * @return {Promise<{}>} A promise to the property.
  */
 
-const addProperty = function (property) {
+const addProperty = function(property) {
   const queryParams = [];
   const values = [];
 
