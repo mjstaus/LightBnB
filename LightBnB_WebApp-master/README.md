@@ -1,10 +1,19 @@
 # LightBnB
 
+## Overview
+---
 This app was built as an exercise in using SQL and relational databases. 
 
 It functions as a simplified AirBnB clone!
+## Features
+---
+- Ability to sign up and log in
+- Create new property listings
+- View existing property listings and reservations associated with logged-in user
+- Search all property listings by city, minimum/maximum cost, and average rating
 
-## Entity Relationship Diagram
+## Lighhouse BnB Database - Entity Relationship Diagram
+---
 
 !["ERD"](docs/LightBnB.drawio.png)
 
@@ -15,6 +24,16 @@ It functions as a simplified AirBnB clone!
 3. Install dependencies using the `npm install` command.
 3. Start the web server using the `npm run local` command. The app will be served at <http://localhost:3000/>.
 4. Go to <http://localhost:3000/> in your browser.
+
+## Dependencies
+---
+- [bcrypt](https://www.npmjs.com/package/bcrypt)
+- [body-parser](https://www.npmjs.com/package/body-parser)
+- [cookie-session](https://www.npmjs.com/package/cookie-session)
+- [dotenv](https://www.npmjs.com/package/dotenv)
+- [express](https://expressjs.com/)
+- [node-postgres](https://www.npmjs.com/package/pg)
+
 ## Project Structure
 
 ```
